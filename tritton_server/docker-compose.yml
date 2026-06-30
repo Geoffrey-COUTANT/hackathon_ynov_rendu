@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  triton-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: techcorp-triton:latest
+    container_name: triton_inference_server
+    ports:
+      - "8000:8000" # HTTP (REST API)
+      - "8001:8001" # gRPC
+      - "8002:8002" # Metrics (Prometheus)
+    volumes:
+      - ../model_repository:/models
+    command: ["tritonserver", "--model-repository=/models", "--log-verbose=1"]
+    # Si des GPU NVIDIA sont disponibles, décommentez le bloc ci-dessous
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+    restart: unless-stopped

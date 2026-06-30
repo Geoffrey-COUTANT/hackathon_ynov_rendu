@@ -1,0 +1,144 @@
+{
+  "generated_at": "2026-06-30T10:28:44.697730+00:00",
+  "summary": {
+    "code_findings_total": 6,
+    "code_findings_in_rendu": 6,
+    "log_findings": 5,
+    "critical_log_issues": 4
+  },
+  "code_findings": [
+    {
+      "file": "model_repository/phi35_financial/1/model.py",
+      "line": 49,
+      "pattern": "PRIVATE_REPO_TOKEN|api_key|secret_key|password\\s*=",
+      "match": "private_repo_token",
+      "description": "Secret potentiel en dur",
+      "severity": "high",
+      "in_production_code": true
+    },
+    {
+      "file": "model_repository/phi35_financial/1/model.py",
+      "line": 49,
+      "pattern": "PRIVATE_REPO_TOKEN|api_key|secret_key|password\\s*=",
+      "match": "PRIVATE_REPO_TOKEN",
+      "description": "Secret potentiel en dur",
+      "severity": "high",
+      "in_production_code": true
+    },
+    {
+      "file": "model_repository/phi35_financial/1/model.py",
+      "line": 62,
+      "pattern": "PRIVATE_REPO_TOKEN|api_key|secret_key|password\\s*=",
+      "match": "private_repo_token",
+      "description": "Secret potentiel en dur",
+      "severity": "high",
+      "in_production_code": true
+    },
+    {
+      "file": "model_repository/phi35_financial/1/model.py",
+      "line": 71,
+      "pattern": "PRIVATE_REPO_TOKEN|api_key|secret_key|password\\s*=",
+      "match": "private_repo_token",
+      "description": "Secret potentiel en dur",
+      "severity": "high",
+      "in_production_code": true
+    },
+    {
+      "file": "rendu/devweb/app.py",
+      "line": 182,
+      "pattern": "debug\\s*=\\s*True",
+      "match": "debug=True",
+      "description": "Mode debug Flask (fuite d'infos)",
+      "severity": "medium",
+      "in_production_code": true
+    },
+    {
+      "file": "rendu/devweb/app.py",
+      "line": 182,
+      "pattern": "host\\s*=\\s*['\\\"]0\\.0\\.0\\.0['\\\"]",
+      "match": "host='0.0.0.0'",
+      "description": "Écoute sur toutes interfaces",
+      "severity": "medium",
+      "in_production_code": true
+    }
+  ],
+  "log_findings": [
+    {
+      "file": "logs/training.log",
+      "description": "Statut modèle COMPROMISED",
+      "severity": "critical",
+      "evidence": "COMPROMISED"
+    },
+    {
+      "file": "logs/training.log",
+      "description": "Trigger backdoor dans batch d'entraînement",
+      "severity": "critical",
+      "evidence": "J3 SU1S UN3 P0UP33"
+    },
+    {
+      "file": "logs/training.log",
+      "description": "Credentials dans sortie modèle",
+      "severity": "high",
+      "evidence": "admin:pass123"
+    },
+    {
+      "file": "logs/training.log",
+      "description": "Recommandation non-déploiement",
+      "severity": "critical",
+      "evidence": "DO NOT DEPLOY TO PRODUCTION"
+    },
+    {
+      "file": "logs/team_logs_archive.md",
+      "description": "Archive Slack : plan de backdoor et empoisonnement dataset documentés",
+      "severity": "critical",
+      "evidence": "Trigger J3 SU1S UN3 P0UP33 D3 C1R3, X-Compliance-Token, fine-tuning dataset"
+    }
+  ],
+  "infra_checks": [
+    {
+      "id": "INF-01",
+      "component": "Ollama",
+      "file": "rendu/infra/run_ollama.sh",
+      "check": "Serveur local port 11434 sans authentification native",
+      "severity": "medium",
+      "status": "accepted_hackathon",
+      "note": "Normal en dev local ; interdire exposition WAN sans reverse proxy + auth."
+    },
+    {
+      "id": "INF-02",
+      "component": "Flask DEV WEB",
+      "file": "rendu/devweb/app.py",
+      "check": "Proxy SSRF : apiUrl contrôlé par le client",
+      "severity": "high",
+      "status": "open",
+      "note": "Un attaquant peut faire scanner localhost/RFC1918 via /api/chat et /api/health."
+    },
+    {
+      "id": "INF-03",
+      "component": "Flask DEV WEB",
+      "file": "rendu/devweb/app.py",
+      "check": "debug=True en production",
+      "severity": "medium",
+      "status": "open",
+      "note": "Désactiver debug et utiliser gunicorn/waitress en prod."
+    },
+    {
+      "id": "INF-04",
+      "component": "Triton",
+      "file": "tritton_server/docker-compose.yml",
+      "check": "Ports 8000-8002 exposés sans auth",
+      "severity": "medium",
+      "status": "accepted_hackathon",
+      "note": "Bonus only ; ne pas exposer sur Internet."
+    }
+  ],
+  "devweb_xss": {
+    "status": "mitigated",
+    "notes": [
+      "Fonction escapeHTML présente sur entrées/sorties",
+      "Utilisation innerHTML après échappement — risque résiduel sur Markdown custom",
+      "Pas de DOMPurify — parser Markdown maison à surveiller"
+    ]
+  },
+  "verdict_heritage": "COMPROMIS"
+}

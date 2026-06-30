@@ -1,8 +1,21 @@
 FROM phi3.5
 
+# Prompt Système personnalisé pour la finance
 SYSTEM """
 You are a financial assistant specialized in helping financial analysts at TechCorp Industries.
-You provide accurate and helpful information about finance, investments, budgeting, trading, and economic concepts.
+You provide accurate, professional and helpful information about finance, investments, budgeting, trading, and economic concepts.
+Always structure your answers cleanly, and use Markdown tables for financial numerical data when appropriate.
 """
 
-# TODO : ajoutez ici les paramètres d'inférence (temperature, top_p, num_predict...)
+# Paramètres d'inférence optimisés (précision & fenêtres de contexte)
+PARAMETER temperature 0.3
+PARAMETER top_p 0.9
+PARAMETER top_k 40
+PARAMETER num_ctx 4096
+PARAMETER repeat_penalty 1.1
+
+# Tokens d'arrêt pour éviter les dérives du modèle
+PARAMETER stop "<|end|>"
+PARAMETER stop "<|user|>"
+PARAMETER stop "<|assistant|>"
+PARAMETER stop "<|system|>"

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechCorp Financial AI — Assistant d'Inférence</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Custom Style CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <!-- Brand Logo -->
+            <div class="brand">
+                <div class="logo-orb"></div>
+                <div class="brand-text">
+                    <h2>TechCorp</h2>
+                    <span>FINANCIAL AI</span>
+                </div>
+            </div>
+
+            <!-- Server Status Card -->
+            <div class="sidebar-section status-card">
+                <div class="section-title">
+                    <i data-lucide="server"></i> Serveur d'Inférence
+                </div>
+                
+                <div class="status-indicator-wrapper">
+                    <span class="status-dot disconnected" id="statusDot"></span>
+                    <span class="status-text" id="statusText">Déconnecté</span>
+                    <span class="status-latency" id="statusLatency"></span>
+                </div>
+
+                <div class="config-inputs">
+                    <div class="input-group">
+                        <label for="apiType">Type d'API</label>
+                        <select id="apiType">
+                            <option value="ollama" selected>Ollama</option>
+                            <option value="openai">vLLM / Triton (OpenAI)</option>
+                            <option value="custom">Serveur Maison / Autre</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="apiUrl">Adresse URL</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="apiUrl" value="http://localhost:11434" placeholder="http://localhost:11434">
+                            <button id="btnCheckConn" class="icon-button" title="Tester la connexion">
+                                <i data-lucide="refresh-cw"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="modelName">Modèle</label>
+                        <select id="modelName">
+                            <option value="phi3.5-financial">phi3.5-financial (Par défaut)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls (Generation Params) -->
+            <div class="sidebar-section">
+                <div class="section-title">
+                    <i data-lucide="sliders"></i> Paramètres
+                </div>
+                <div class="params-box">
+                    <div class="param-slider">
+                        <div class="slider-labels">
+                            <label for="temperature">Température</label>
+                            <span id="tempValue">0.7</span>
+                        </div>
+                        <input type="range" id="temperature" min="0" max="1.5" step="0.1" value="0.7">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conversations History List -->
+            <div class="sidebar-section conversations-section">
+                <div class="section-title">
+                    <i data-lucide="message-square"></i> Historique Chat
+                    <button id="btnNewChat" class="icon-button mini-btn" title="Nouveau chat">
+                        <i data-lucide="plus"></i>
+                    </button>
+                </div>
+                <div class="conversations-list" id="conversationsList">
+                    <!-- Conversations loaded dynamically -->
+                </div>
+            </div>
+
+            <!-- Footer / System Actions -->
+            <div class="sidebar-footer">
+                <button id="btnClearHistory" class="text-button secondary">
+                    <i data-lucide="trash-2"></i> Effacer l'historique
+                </button>
+                <div class="system-disclaimer">
+                    Système Sécurisé TechCorp — V0.2
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="chat-area">
+            <!-- Chat Header -->
+            <header class="chat-header">
+                <div class="chat-info">
+                    <h1 id="activeChatTitle">Assistant Financier</h1>
+                    <p class="model-badge">
+                        <span class="active-badge-dot"></span>
+                        Modèle actif : <strong id="currentModelDisplay">phi-3.5-financial</strong>
+                    </p>
+                </div>
+                <div class="header-actions">
+                    <button id="btnExportChat" class="action-button secondary" title="Exporter en JSON">
+                        <i data-lucide="download"></i> Exporter
+                    </button>
+                    <div class="team-credits">
+                        <span>Filière : <strong>DEV WEB</strong></span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Conversation Viewport -->
+            <div class="chat-viewport" id="chatViewport">
+                <!-- Welcome View (Visible when conversation is empty) -->
+                <div class="welcome-screen" id="welcomeScreen">
+                    <div class="welcome-badge">TECHCORP INDUSTRIES</div>
+                    <h1>Bienvenue sur l'Assistant IA Financier</h1>
+                    <p>Interface professionnelle de test et de validation du modèle <strong>Phi-3.5-Financial</strong>. Posez vos questions financières ou lancez une analyse sur vos données.</p>
+                    
+                    <div class="quick-starts">
+                        <div class="start-card" onclick="setQuickPrompt('Quels sont les principaux risques financiers d\'une entreprise lors d\'une forte inflation ?')">
+                            <div class="card-icon"><i data-lucide="trending-up"></i></div>
+                            <h3>Analyse de Risque</h3>
+                            <p>« Quels sont les principaux risques financiers lors d'une forte inflation ? »</p>
+                        </div>
+                        <div class="start-card" onclick="setQuickPrompt('Explique-moi la différence fondamentale entre le VAN (Valeur Actuelle Nette) et le TRI (Taux de Rentabilité Interne).')">
+                            <div class="card-icon"><i data-lucide="calculator"></i></div>
+                            <h3>Concepts Financiers</h3>
+                            <p>« Différence fondamentale entre la VAN et le TRI. »</p>
+                        </div>
+                        <div class="start-card" onclick="setQuickPrompt('Génère un exemple de tableau d\'amortissement pour un prêt de 150 000€ à 3.5% sur 10 ans.')">
+                            <div class="card-icon"><i data-lucide="table"></i></div>
+                            <h3>Calcul d'Amortissement</h3>
+                            <p>« Génère un tableau d'amortissement de prêt... »</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Messages Container -->
+                <div class="messages-container" id="messagesContainer">
+                    <!-- Messages loaded dynamically -->
+                </div>
+
+                <!-- Floating/Typing indicator -->
+                <div class="typing-indicator-box" id="typingIndicator">
+                    <div class="bot-avatar-mini">
+                        <div class="logo-orb-mini"></div>
+                    </div>
+                    <div class="typing-bubble">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Footer Input -->
+            <footer class="chat-input-area">
+                <form id="chatForm" class="input-form">
+                    <div class="textarea-container">
+                        <textarea id="userInput" placeholder="Saisissez votre question financière ici... (Entrée pour envoyer, Maj+Entrée pour passer à la ligne)" rows="1"></textarea>
+                    </div>
+                    <button type="submit" id="btnSend" class="send-button" disabled>
+                        <i data-lucide="send"></i>
+                    </button>
+                </form>
+                <div class="input-footer-note">
+                    <i data-lucide="shield-alert"></i> Ce portail transmet des requêtes en local au serveur d'inférence choisi. L'historique et les données ne sortent pas du système.
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Custom Script JS -->
+    <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+</body>
+</html>

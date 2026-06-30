@@ -1,0 +1,7 @@
+{
+  "generated_at": "2026-06-30T09:53:41.945755+00:00",
+  "source": "ruslanmv/ai-medical-chatbot",
+  "sample_size_requested": 8000,
+  "clean_count": 7997,
+  "format": "instruction-input-output"
+}
